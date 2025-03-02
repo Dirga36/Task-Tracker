@@ -77,7 +77,30 @@ def list_tasks(status=None):
     if status:
         tasks = [task for task in tasks if task["status"] == status]
     for task in tasks:
-        print(f"[ID: {task['id']}] {task['description']} - {task['status']} (Created: {task['createdAt']})")
+        print(f"[ID: {task['id']}] {task['description']} - {task['status']} (Created: {task['createdAt']}, Updated: {task['updatedAt']})")
+
+# Search tasks by keyword
+def search_tasks(keyword):
+    tasks = load_tasks()
+    tasks = [task for task in tasks if keyword.lower() in task["description"].lower()]
+    for task in tasks:
+        print(f"[ID: {task['id']}] {task['description']} - {task['status']} (Created: {task['createdAt']}, Updated: {task['updatedAt']})")
+
+# Sort tasks by date
+def sort_tasks(by="createdAt"):
+    tasks = load_tasks()
+    tasks.sort(key=lambda x: x[by])
+    for task in tasks:
+        print(f"[ID: {task['id']}] {task['description']} - {task['status']} (Created: {task['createdAt']}, Updated: {task['updatedAt']})")
+
+# Filter tasks by date range
+def filter_tasks(start_date, end_date, by="createdAt"):
+    tasks = load_tasks()
+    start_date = datetime.fromisoformat(start_date)
+    end_date = datetime.fromisoformat(end_date)
+    tasks = [task for task in tasks if start_date <= datetime.fromisoformat(task[by]) <= end_date]
+    for task in tasks:
+        print(f"[ID: {task['id']}] {task['description']} - {task['status']} (Created: {task['createdAt']}, Updated: {task['updatedAt']})")
 
 # CLI setup
 def main():
@@ -87,7 +110,6 @@ def main():
     
     subparsers.add_parser("list")
     subparsers.add_parser("list-done")
-    subparsers.add_parser("list-todo")
     subparsers.add_parser("list-in-progress")
     
     add_parser = subparsers.add_parser("add")
@@ -104,6 +126,17 @@ def main():
     mark_parser.add_argument("task_id", type=int, help="Task ID")
     mark_parser.add_argument("status", type=str, choices=["todo", "in-progress", "done"], help="New status")
     
+    search_parser = subparsers.add_parser("search")
+    search_parser.add_argument("keyword", type=str, help="Keyword to search in task descriptions")
+    
+    sort_parser = subparsers.add_parser("sort")
+    sort_parser.add_argument("by", type=str, choices=["createdAt", "updatedAt"], help="Sort tasks by date")
+    
+    filter_parser = subparsers.add_parser("filter")
+    filter_parser.add_argument("start_date", type=str, help="Start date (YYYY-MM-DD)")
+    filter_parser.add_argument("end_date", type=str, help="End date (YYYY-MM-DD)")
+    filter_parser.add_argument("by", type=str, choices=["createdAt", "updatedAt"], help="Filter tasks by date range")
+    
     args = parser.parse_args()
     
     if args.command == "add":
@@ -118,10 +151,14 @@ def main():
         list_tasks()
     elif args.command == "list-done":
         list_tasks("done")
-    elif args.command == "list-todo":
-        list_tasks("todo")
     elif args.command == "list-in-progress":
         list_tasks("in-progress")
+    elif args.command == "search":
+        search_tasks(args.keyword)
+    elif args.command == "sort":
+        sort_tasks(args.by)
+    elif args.command == "filter":
+        filter_tasks(args.start_date, args.end_date, args.by)
     else:
         parser.print_help()
 
