@@ -99,4 +99,4 @@ python task_tracker.py filter 2023-01-01 2023-12-31 createdAt
 
 ## License
 
-This project is licensed under the MIT License.https://roadmap.sh/projects/task-tracker
+This project is licensed under the MIT License.
